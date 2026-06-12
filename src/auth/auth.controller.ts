@@ -15,4 +15,12 @@ export class AuthController {
   async login(@Body() body: any) {
     return this.authService.login(body.email, body.password);
   }
+
+  @HttpCode(HttpStatus.OK)
+  @Post('logout')
+  async logout() {
+    // For stateless JWT, we just send a success message to the frontend
+    // The frontend handles clearing the token.
+    return { message: 'Logged out successfully' };
+  }
 }
