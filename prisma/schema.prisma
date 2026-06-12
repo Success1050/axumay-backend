@@ -1,0 +1,72 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../node_modules/.prisma/client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  balance      Balance?
+  investments  Investment[]
+  transactions Transaction[]
+}
+
+model Balance {
+  id              String   @id @default(uuid())
+  userId          String   @unique
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  mainBalance     Decimal  @default(0.00) @db.Decimal(10, 2)
+  interestBalance Decimal  @default(0.00) @db.Decimal(10, 2)
+  totalDeposit    Decimal  @default(0.00) @db.Decimal(10, 2)
+  totalEarn       Decimal  @default(0.00) @db.Decimal(10, 2)
+  version         Int      @default(1) // For Optimistic Concurrency Control
+  updatedAt       DateTime @updatedAt
+}
+
+model InvestmentPlan {
+  id              String   @id @default(uuid())
+  name            String
+  interestRate    Decimal  @db.Decimal(5, 2) // Percentage e.g. 5.00
+  minDeposit      Decimal  @db.Decimal(10, 2)
+  maxDeposit      Decimal  @db.Decimal(10, 2)
+  maturityHours   Int      // e.g. 24 for daily, 168 for weekly
+  capitalReturn   Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  
+  investments     Investment[]
+}
+
+model Investment {
+  id              String   @id @default(uuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id])
+  planId          String
+  plan            InvestmentPlan @relation(fields: [planId], references: [id])
+  amount          Decimal  @db.Decimal(10, 2)
+  status          String   @default("ACTIVE") // ACTIVE, COMPLETED
+  nextPayoutDate  DateTime
+  createdAt       DateTime @default(now())
+}
+
+model Transaction {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  type        String   // DEPOSIT, PAYOUT, INVESTMENT
+  amount      Decimal  @db.Decimal(10, 2)
+  status      String   @default("COMPLETED") // PENDING, COMPLETED, FAILED
+  description String?
+  createdAt   DateTime @default(now())
+}
