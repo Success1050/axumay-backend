@@ -130,5 +130,52 @@ export class AdminService {
       return { message: `Withdrawal ${action}D` };
     });
   }
+
+  async getStats() {
+    const totalUsers = await this.prisma.user.count();
+    const allUsers = await this.prisma.user.findMany({
+      select: { createdAt: true }
+    });
+    return {
+      totalUsers,
+      userCreationDates: allUsers.map(u => u.createdAt)
+    };
+  }
+
+  async getAllUsers() {
+    return this.prisma.user.findMany({
+      select: {
+        id: true,
+        email: true,
+        createdAt: true,
+        isAdmin: true,
+        balance: { select: { mainBalance: true, totalDeposit: true } }
+      },
+      orderBy: { createdAt: 'desc' }
+    });
+  }
+
+  async deleteUser(userId: string) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user) throw new NotFoundException('User not found');
+    if (user.isAdmin) throw new BadRequestException('Cannot delete an admin user');
+
+    // Balance, investments, transactions are Cascade deleted if configured. 
+    // Wait, the schema has `onDelete: Cascade` for Balance, but maybe not for others?
+    // Let's manually delete child records to be safe.
+    await this.prisma.$transaction(async (prisma) => {
+      await prisma.investment.deleteMany({ where: { userId } });
+      await prisma.transaction.deleteMany({ where: { userId } });
+      await prisma.depositRequest.deleteMany({ where: { userId } });
+      await prisma.withdrawalRequest.deleteMany({ where: { userId } });
+      
+      const balance = await prisma.balance.findUnique({ where: { userId } });
+      if (balance) await prisma.balance.delete({ where: { userId } });
+
+      await prisma.user.delete({ where: { id: userId } });
+    });
+
+    return { message: 'User deleted successfully' };
+  }
 }
 

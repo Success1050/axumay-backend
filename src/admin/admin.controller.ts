@@ -37,5 +37,20 @@ export class AdminController {
   async processWithdrawal(@Body() body: { withdrawalId: string; action: 'APPROVE' | 'REJECT' }) {
     return this.adminService.processWithdrawal(body.withdrawalId, body.action);
   }
+
+  @Get('stats')
+  async getStats() {
+    return this.adminService.getStats();
+  }
+
+  @Get('users')
+  async getAllUsers() {
+    return this.adminService.getAllUsers();
+  }
+
+  @Post('delete-user')
+  async deleteUser(@Body() body: { userId: string }) {
+    return this.adminService.deleteUser(body.userId);
+  }
 }
 
