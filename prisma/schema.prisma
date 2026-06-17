@@ -71,6 +71,7 @@ model Transaction {
   amount      Decimal  @db.Decimal(10, 2)
   status      String   @default("COMPLETED") // PENDING, COMPLETED, FAILED
   description String?
+  note        String?
   createdAt   DateTime @default(now())
 }
 
