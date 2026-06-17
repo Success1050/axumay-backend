@@ -13,7 +13,7 @@ export class AdminService {
     });
   }
 
-  async fundUser(email: string, amount: number) {
+  async fundUser(email: string, amount: number, note?: string) {
     return this.prisma.$transaction(async (prisma) => {
       const user = await prisma.user.findUnique({ where: { email } });
       if (!user) throw new NotFoundException('User not found');
@@ -35,12 +35,12 @@ export class AdminService {
           userId: user.id,
           type: 'DEPOSIT',
           amount,
-          description: 'Admin Manual Funding',
+          description: note || 'Admin Manual Funding',
           status: 'COMPLETED'
         }
       });
 
-      return { message: 'Funded successfully' };
+      return { message: 'Funded successfully', note };
     });
   }
 
@@ -178,4 +178,3 @@ export class AdminService {
     return { message: 'User deleted successfully' };
   }
 }
-

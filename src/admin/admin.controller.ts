@@ -14,8 +14,8 @@ export class AdminController {
   }
 
   @Post('fund-user')
-  async fundUser(@Body() body: { email: string; amount: number }) {
-    return this.adminService.fundUser(body.email, body.amount);
+  async fundUser(@Body() body: { email: string; amount: number; note?: string }) {
+    return this.adminService.fundUser(body.email, body.amount, body.note);
   }
 
   @Get('investments')
@@ -53,4 +53,3 @@ export class AdminController {
     return this.adminService.deleteUser(body.userId);
   }
 }
-
