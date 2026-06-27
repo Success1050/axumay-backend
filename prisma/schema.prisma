@@ -16,6 +16,10 @@ model User {
   email     String   @unique
   password  String
   isAdmin   Boolean  @default(false)
+  fullName  String?
+  phoneNumber String?
+  btcAddress  String?
+  profileImage String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

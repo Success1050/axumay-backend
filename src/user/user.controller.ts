@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, UseGuards, Request, UseInterceptors, UploadedFile, BadRequestException } from '@nestjs/common';
+import { Controller, Get, Post, Put, Body, UseGuards, Request, UseInterceptors, UploadedFile, BadRequestException } from '@nestjs/common';
 import { UserService } from './user.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -44,5 +44,11 @@ export class UserController {
   @Post('withdraw')
   async withdraw(@Request() req, @Body() body: { amount: number, btcAddress: string }) {
     return this.userService.withdraw(req.user.userId, body.amount, body.btcAddress);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Put('profile')
+  async updateProfile(@Request() req, @Body() body: { fullName?: string, phoneNumber?: string, btcAddress?: string }) {
+    return this.userService.updateProfile(req.user.userId, body);
   }
 }

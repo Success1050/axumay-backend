@@ -128,5 +128,19 @@ export class UserService {
       return request;
     });
   }
+
+  async updateProfile(userId: string, data: { fullName?: string, phoneNumber?: string, btcAddress?: string }) {
+    const updatedUser = await this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        fullName: data.fullName,
+        phoneNumber: data.phoneNumber,
+        btcAddress: data.btcAddress
+      }
+    });
+    
+    const { password, ...safeUser } = updatedUser;
+    return safeUser;
+  }
 }
 
